@@ -5,21 +5,44 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      background: black;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-    }
+    body { background: black; overflow: hidden; width: 100vw; height: 100vh; }
     img {
-      max-width: 100%;
-      max-height: 100vh;
-      object-fit: contain;
+      position: absolute;
+      width: 300px;
+      height: 300px;
+      object-fit: cover;
+      border-radius: 50%;
     }
   </style>
 </head>
 <body>
-  <img src="photo.jpg" alt="">
+  <img id="photo" src="photo.jpg">
+  <script>
+    const img = document.getElementById('photo');
+    let x = 100, y = 100;
+    let dx = 3, dy = 3;
+
+    function loop() {
+      const W = window.innerWidth;
+      const H = window.innerHeight;
+      const w = img.offsetWidth;
+      const h = img.offsetHeight;
+
+      x += dx;
+      y += dy;
+
+      if (x + w >= W) { x = W - w; dx = -Math.abs(dx); }
+      if (x <= 0)      { x = 0;     dx =  Math.abs(dx); }
+      if (y + h >= H)  { y = H - h; dy = -Math.abs(dy); }
+      if (y <= 0)      { y = 0;     dy =  Math.abs(dy); }
+
+      img.style.left = x + 'px';
+      img.style.top  = y + 'px';
+
+      requestAnimationFrame(loop);
+    }
+
+    loop();
+  </script>
 </body>
 </html>
