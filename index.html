@@ -6,38 +6,97 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { background: black; overflow: hidden; width: 100vw; height: 100vh; }
-    img {
+    .photo {
       position: absolute;
-      width: 300px;
-      height: 300px;
+      width: 150px;
+      height: 150px;
       object-fit: cover;
-      border-radius: 50%;
+      display: none;
     }
   </style>
 </head>
 <body>
-  <img id="photo" src="photo.jpg">
+
+  <img class="photo" src="photo1.jpg">
+  <img class="photo" src="photo2.jpg">
+  <img class="photo" src="photo3.jpg">
+  <img class="photo" src="photo4.jpg">
+  <img class="photo" src="photo5.jpg">
+  <img class="photo" src="photo6.jpg">
+  <img class="photo" src="photo7.jpg">
+  <img class="photo" src="photo8.jpg">
+  <img class="photo" src="photo9.jpg">
+  <img class="photo" src="photo10.jpg">
+  <img class="photo" src="photo11.jpg">
+  <img class="photo" src="photo12.jpg">
+  <img class="photo" src="photo13.jpg">
+  <img class="photo" src="photo14.jpg">
+
   <script>
-    const img = document.getElementById('photo');
-    let x = 100, y = 100;
-    let dx = 3, dy = 3;
+    const SIZE = 150;
+    const SPEED = 3;
+
+    const imgs = Array.from(document.querySelectorAll('.photo'));
+
+    // only keep images that loaded successfully
+    const balls = [];
+
+    let loaded = 0;
+    imgs.forEach((img, i) => {
+      img.onload = () => {
+        img.style.display = 'block';
+        balls.push({
+          el: img,
+          x: Math.random() * (window.innerWidth  - SIZE),
+          y: Math.random() * (window.innerHeight - SIZE),
+          dx: (Math.random() < 0.5 ? 1 : -1) * (SPEED + Math.random() * 2),
+          dy: (Math.random() < 0.5 ? 1 : -1) * (SPEED + Math.random() * 2),
+        });
+      };
+      img.onerror = () => { img.remove(); };
+    });
+
+    function collide(a, b) {
+      const ax = a.x + SIZE/2, ay = a.y + SIZE/2;
+      const bx = b.x + SIZE/2, by = b.y + SIZE/2;
+      const dist = Math.sqrt((ax-bx)**2 + (ay-by)**2);
+      if (dist < SIZE) {
+        // swap velocities (simple elastic collision)
+        [a.dx, b.dx] = [b.dx, a.dx];
+        [a.dy, b.dy] = [b.dy, a.dy];
+
+        // push apart so they don't stick
+        const overlap = SIZE - dist;
+        const nx = (ax - bx) / dist;
+        const ny = (ay - by) / dist;
+        a.x += nx * overlap / 2;
+        a.y += ny * overlap / 2;
+        b.x -= nx * overlap / 2;
+        b.y -= ny * overlap / 2;
+      }
+    }
 
     function loop() {
       const W = window.innerWidth;
       const H = window.innerHeight;
-      const w = img.offsetWidth;
-      const h = img.offsetHeight;
 
-      x += dx;
-      y += dy;
+      for (const b of balls) {
+        b.x += b.dx;
+        b.y += b.dy;
 
-      if (x + w >= W) { x = W - w; dx = -Math.abs(dx); }
-      if (x <= 0)      { x = 0;     dx =  Math.abs(dx); }
-      if (y + h >= H)  { y = H - h; dy = -Math.abs(dy); }
-      if (y <= 0)      { y = 0;     dy =  Math.abs(dy); }
+        if (b.x + SIZE >= W) { b.x = W - SIZE; b.dx = -Math.abs(b.dx); }
+        if (b.x <= 0)        { b.x = 0;        b.dx =  Math.abs(b.dx); }
+        if (b.y + SIZE >= H) { b.y = H - SIZE;  b.dy = -Math.abs(b.dy); }
+        if (b.y <= 0)        { b.y = 0;         b.dy =  Math.abs(b.dy); }
 
-      img.style.left = x + 'px';
-      img.style.top  = y + 'px';
+        b.el.style.left = b.x + 'px';
+        b.el.style.top  = b.y + 'px';
+      }
+
+      // check every pair for collisions
+      for (let i = 0; i < balls.length; i++)
+        for (let j = i + 1; j < balls.length; j++)
+          collide(balls[i], balls[j]);
 
       requestAnimationFrame(loop);
     }
